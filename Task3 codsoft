@@ -1,1 +1,203 @@
 
+#include <iostream>
+#include <vector>
+#include <string>
+#include <iomanip>
+
+using namespace std;
+
+class Seat {
+private:
+    bool available;
+
+public:
+    Seat() : available(true) {}
+
+    bool isAvailable() const {
+        return available;
+    }
+
+    void book() {
+        available = false;
+    }
+
+    void cancelBooking() {
+        available = true;
+    }
+};
+
+class Movie {
+private:
+    string title;
+    double ticketPrice;
+    vector<vector<Seat>> seats;
+
+public:
+    Movie(string title, double ticketPrice, int numRows, int seatsPerRow)
+        : title(title), ticketPrice(ticketPrice) {
+        seats.resize(numRows, vector<Seat>(seatsPerRow));
+    }
+
+    string getTitle() const {
+        return title;
+    }
+
+    double getTicketPrice() const {
+        return ticketPrice;
+    }
+
+    int getNumRows() const {
+        return seats.size();
+    }
+
+    int getSeatsPerRow() const {
+        return !seats.empty() ? seats[0].size() : 0;
+    }
+
+    bool isSeatAvailable(int row, int seatNum) const {
+        return row > 0 && row <= getNumRows() && seatNum > 0 && seatNum <= getSeatsPerRow() && seats[row - 1][seatNum - 1].isAvailable();
+    }
+
+    void bookSeat(int row, int seatNum) {
+        seats[row - 1][seatNum - 1].book();
+    }
+
+    void cancelBooking(int row, int seatNum) {
+        seats[row - 1][seatNum - 1].cancelBooking();
+    }
+};
+
+class Theater {
+private:
+    vector<Movie> movies;
+
+public:
+    void addMovie(const Movie& movie) {
+        movies.push_back(movie);
+    }
+
+    void displayMovieListings() const {
+        cout << "Movie Listings:\n";
+        for (const auto& movie : movies) {
+            cout << "Title: " << movie.getTitle() << ", Ticket Price: $" << fixed << setprecision(2) << movie.getTicketPrice() << endl;
+        }
+    }
+
+    bool isMovieAvailable(const string& movieTitle) const {
+        for (const auto& movie : movies) {
+            if (movie.getTitle() == movieTitle) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    const Movie& getMovie(const string& movieTitle) const {
+        for (const auto& movie : movies) {
+            if (movie.getTitle() == movieTitle) {
+                return movie;
+            }
+        }
+        throw runtime_error("Movie not found.");
+    }
+
+    void bookTickets(const Movie& movie, int numTickets) {
+        int count = 0;
+        cout << "Select available seats for " << movie.getTitle() << ":" << endl;
+        for (int row = 1; row <= movie.getNumRows(); ++row) {
+            for (int seatNum = 1; seatNum <= movie.getSeatsPerRow(); ++seatNum) {
+                if (movie.isSeatAvailable(row, seatNum)) {
+                    cout << "Row: " << row << ", Seat: " << seatNum << endl;
+                    count++;
+                }
+            }
+        }
+        if (count < numTickets) {
+            cout << "Insufficient available seats.\n";
+            return;
+        }
+        for (int i = 0; i < numTickets; ++i) {
+            int row, seatNum;
+            cout << "Enter row and seat number for ticket " << i + 1 << ": ";
+            cin >> row >> seatNum;
+            if (movie.isSeatAvailable(row, seatNum)) {
+                movie.bookSeat(row, seatNum);
+            } else {
+                cout << "Seat not available. Try again.\n";
+                --i;
+            }
+        }
+        cout << "Tickets booked successfully!\n";
+    }
+
+    void cancelBooking(const Movie& movie, int row, int seatNum) {
+        movie.cancelBooking(row, seatNum);
+        cout << "Booking canceled for row " << row << ", seat " << seatNum << ".\n";
+    }
+};
+
+int main() {
+    Theater theater;
+
+    // Adding sample movies to the theater
+    theater.addMovie(Movie("Inception", 10.0, 5, 10));
+    theater.addMovie(Movie("The Dark Knight", 12.0, 6, 12));
+
+    int choice;
+    do {
+        cout << "\n===== Movie Ticket Booking System =====\n";
+        cout << "1. View Movie Listings\n";
+        cout << "2. Book Tickets\n";
+        cout << "3. Cancel Booking\n";
+        cout << "4. Exit\n";
+        cout << "Enter your choice: ";
+        cin >> choice;
+
+        switch (choice) {
+            case 1:
+                theater.displayMovieListings();
+                break;
+            case 2: {
+                string movieTitle;
+                int numTickets;
+                cout << "Enter the movie title: ";
+                cin.ignore();
+                getline(cin, movieTitle);
+                if (theater.isMovieAvailable(movieTitle)) {
+                    const Movie& movie = theater.getMovie(movieTitle);
+                    cout << "Enter the number of tickets: ";
+                    cin >> numTickets;
+                    theater.bookTickets(movie, numTickets);
+                } else {
+                    cout << "Movie not found.\n";
+                }
+                break;
+            }
+            case 3: {
+                string movieTitle;
+                cout << "Enter the movie title: ";
+                cin.ignore();
+                getline(cin, movieTitle);
+                if (theater.isMovieAvailable(movieTitle)) {
+                    const Movie& movie = theater.getMovie(movieTitle);
+                    int row, seatNum;
+                    cout << "Enter the row number: ";
+                    cin >> row;
+                    cout << "Enter the seat number: ";
+                    cin >> seatNum;
+                    theater.cancelBooking(movie, row, seatNum);
+                } else {
+                    cout << "Movie not found.\n";
+                }
+                break;
+            }
+            case 4:
+                cout << "Thank you for using the Movie Ticket Booking System!\n";
+                break;
+            default:
+                cout << "Invalid choice. Please try again.\n";
+        }
+    } while (choice != 4);
+
+    return 0;
+}
