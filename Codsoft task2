@@ -1,1 +1,15 @@
+#include <iostream>
+#include <string>
+using namespace std;
+class Movie { public: string title; double ticketPrice; Movie(string title, double ticketPrice) : title(title), ticketPrice(ticketPrice) {} };
+class Theater { public: void displayMovie(const Movie& movie) const { cout << "Title: " << movie.title << ", Ticket Price: $" << movie.ticketPrice << endl; } };
+
+int main() {
+    Theater theater;
+    Movie movie1("Inception", 10.0);
+    Movie movie2("The Dark Knight", 12.0);
+    theater.displayMovie(movie1);
+    theater.displayMovie(movie2);
+    return 0;
+}
 
