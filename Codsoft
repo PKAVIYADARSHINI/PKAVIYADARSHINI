@@ -1,12 +1,24 @@
-- 👋 Hi, I’m @PKAVIYADARSHINI
-- 👀 I’m interested in ...
-- 🌱 I’m currently learning ...
-- 💞️ I’m looking to collaborate on ...
-- 📫 How to reach me ...
-- 😄 Pronouns: ...
-- ⚡ Fun fact: ...
+#include <iostream>
+#include <string>
+#include <sstream>
 
-<!---
-PKAVIYADARSHINI/PKAVIYADARSHINI is a ✨ special ✨ repository because its `README.md` (this file) appears on your GitHub profile.
-You can click the Preview link to take a look at your changes.
---->
+using namespace std;
+
+int countWords(const string& input) {
+    stringstream ss(input);
+    string word;
+    int count = 0;
+    while (ss >> word) {
+        count++;
+    }
+    return count;
+}
+
+int main() {
+    string input;
+    cout << "Enter a sentence: ";
+    getline(cin, input);
+    int wordCount = countWords(input);
+    cout << "Number of words: " << wordCount << endl;
+    return 0;
+}
